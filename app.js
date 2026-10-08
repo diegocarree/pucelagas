@@ -41,10 +41,11 @@ function priceBig(v) {
 
 function formatDate(value) {
   const direct = safeText(value);
+  const match = direct.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{1,2}:\d{2})/);
+  if (match) return `${match[1]}/${match[2]}/${match[3]} ${match[4]}`;
   const d = new Date(value);
   if (!Number.isNaN(d.getTime())) return d.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
-  const match = direct.match(/(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2}:\d{2})/);
-  return match ? `${match[1]} ${match[2]}` : direct || '—';
+  return direct || '—';
 }
 
 function parseCoordinate(value) {
