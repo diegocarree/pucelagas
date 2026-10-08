@@ -1,0 +1,24 @@
+name: Actualizar precios
+on:
+  schedule:
+    - cron: '17 * * * *'   # cada hora, minuto 17
+  workflow_dispatch: {}      # también manualmente desde la pestaña Actions
+permissions:
+  contents: write
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Comprobar que la fuente oficial responde y guardar histórico
+        run: node build.js
+      - name: Guardar histórico en el repositorio
+        run: |
+          git config user.name "pucelagas-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add history.json
+          git diff --cached --quiet || (git commit -m "Histórico de precios" && git push)
+      - name: Publicar en Cloudflare Pages
+        run: curl -fsS -X POST "${{ secrets.CF_DEPLOY_HOOK }}"
