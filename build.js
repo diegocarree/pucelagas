@@ -1,10 +1,10 @@
 // Genera la web completa como archivos estáticos en /dist. Uso: node build.js
 const fs = require('fs'), path = require('path');
-const { snapshotToFile } = require('./api/_data');
+const { snapshotToFile } = require('./_data');
 const OUT = path.join(__dirname, 'dist');
 const run = async (file, query) => {
   const r = { code: 200, body: null, setHeader() {}, status(c) { this.code = c; return this; }, send(b) { this.body = b; return this; }, json(b) { this.body = b; return this; } };
-  await require('./api/' + file)({ method: 'GET', query }, r);
+  await require('./' + file)({ method: 'GET', query }, r);
   if (r.code !== 200) throw new Error(`${file} ${JSON.stringify(query)} devolvió ${r.code}`);
   return r.body;
 };
@@ -21,7 +21,7 @@ const write = (rel, content) => { const f = path.join(OUT, rel); fs.mkdirSync(pa
   for (const [tipo, p] of Object.entries(fuels)) write(`${p}.html`, await run('seo.js', { tipo }));
   for (const s of data.stations) write(`gasolinera/${s.slug}.html`, await run('seo.js', { tipo: 'estacion', id: s.slug }));
   for (const z of new Set(data.stations.map((s) => s['C.P.']).filter(Boolean))) write(`gasolineras-cp/${z}.html`, await run('seo.js', { tipo: 'cp', id: z }));
-  write("guias.html", await run('guias.js', {}));
+  write('guias.html', await run('guias.js', {}));
   for (const g of ['gasolina-95-vs-98', 'como-ahorrar-combustible', 'donde-repostar-mas-barato']) write(`guias/${g}.html`, await run('guias.js', { slug: g }));
   write('sitemap.xml', await run('sitemap.js', {}));
   write('404.html', '<!doctype html><meta charset="utf-8"><title>No encontrada — PucelaGas</title><link rel="stylesheet" href="/styles.css"><main class="seo-section" style="margin:40px auto;max-width:700px"><div class="seo-copy"><h1>Página no encontrada</h1><p><a href="/">Volver al mapa</a></p></div></main>');
