@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PucelaGas — Gasolineras y precios en Valladolid</title>
+  <meta name="description" content="Compara gasolineras de Valladolid en un mapa y consulta precios actuales de diésel, gasolina 95 y gasolina 98 con datos oficiales." />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://pucelagas.es/" />
+  <meta property="og:title" content="PucelaGas — Gasolina y diésel más baratos en Valladolid" />
+  <meta property="og:description" content="Mapa de gasolineras de Valladolid con precios oficiales actualizados." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://pucelagas.es/" />
+  <meta name="theme-color" content="#0a9b59" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "name":"PucelaGas",
+    "url":"https://pucelagas.es/",
+    "description":"Comparador de precios de carburantes y mapa de gasolineras en Valladolid.",
+    "inLanguage":"es-ES"
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="PucelaGas inicio">
+      <span class="brand-mark">⛽</span>
+      <span class="brand-copy">
+        <span class="brand-name">Pucela<span>Gas</span></span>
+        <span class="brand-sub">Precios de carburantes en Valladolid</span>
+      </span>
+    </a>
+    <nav class="top-nav" aria-label="Navegación principal">
+      <a href="#precios">Precios</a>
+      <a href="#mapa">Mapa</a>
+      <a href="/diesel-valladolid">Diésel</a>
+      <a href="/gasolina-95-valladolid">Gasolina 95</a>
+      <a href="/gasolina-98-valladolid">Gasolina 98</a>
+      <a href="/guias">Guías</a>
+    </nav>
+    <div class="top-actions">
+      <button id="locateBtn" class="icon-btn" type="button" title="Usar mi ubicación" aria-label="Usar mi ubicación">⌖</button>
+      <button id="refreshBtn" class="refresh-btn" type="button"><span>↻</span> Actualizar</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> Valladolid · comparador local</div>
+        <h1>Encuentra dónde <span>repostar más barato.</span></h1>
+        <p>Compara las gasolineras de Valladolid en un solo mapa. Cambia de combustible, ordena por precio y encuentra la mejor opción en segundos.</p>
+        <div class="hero-actions">
+          <button id="heroLocateBtn" class="primary-btn" type="button">⌖ Cerca de mí</button>
+          <a class="secondary-btn" href="#mapa">Ver mapa</a>
+        </div>
+        <div class="trust-row"><span>✓ Datos oficiales</span><span>✓ Se actualiza cada 15 min</span><span>✓ Comparación por precio</span></div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-top">
+          <span class="live-dot"></span>
+          <span>Estado de PucelaGas</span>
+        </div>
+        <strong id="statusText">Cargando precios…</strong>
+        <span id="updatedText">Consultando datos oficiales</span>
+        <div class="hero-card-foot"><span id="heroBestLabel">Diésel más barato</span><b id="heroBestPrice">—</b></div>
+      </div>
+    </section>
+
+    <section class="stats-grid" id="precios" aria-label="Resumen de precios">
+      <article class="stat-card accent">
+        <div class="stat-icon">€</div>
+        <div><small>Más barato</small><strong id="bestPrice">—</strong><span id="bestStation">—</span></div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-icon">⛽</div>
+        <div><small>Gasolineras con precio</small><strong id="statStations">—</strong><span id="stationCoverage">—</span></div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-icon">↕</div>
+        <div><small>Precio medio</small><strong id="avgPrice">—</strong><span>Sobre estaciones con precio</span></div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-icon">💶</div>
+        <div><small>Ahorro en 50 L</small><strong id="saving50">—</strong><span>Entre la más barata y la más cara</span></div>
+      </article>
+    </section>
+
+    <section class="control-card" aria-label="Filtros">
+      <div class="fuel-tabs" role="tablist" aria-label="Combustible">
+        <button class="fuel-tab active" data-fuel="diesel" type="button">Diésel</button>
+        <button class="fuel-tab" data-fuel="g95" type="button">Gasolina 95</button>
+        <button class="fuel-tab" data-fuel="g98" type="button">Gasolina 98</button>
+        <button class="fuel-tab" data-fuel="dieselp" type="button">Diésel premium</button>
+        <button class="fuel-tab" data-fuel="glp" type="button">GLP</button>
+      </div>
+      <div class="filters">
+        <label class="field search-field"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar gasolinera, marca o dirección…" autocomplete="off" /></label>
+        <label class="field"><span class="field-label">Marca</span><select id="brandSelect"><option value="">Todas</option></select></label>
+        <label class="field"><span class="field-label">Orden</span><select id="sortSelect"><option value="price">Más baratas</option><option value="distance">Más cercanas</option><option value="name">A-Z</option></select></label>
+        <label class="field"><span class="field-label">24 h</span><input id="open24" type="checkbox" /></label>
+        <button id="clearBtn" class="clear-btn" type="button">Limpiar</button>
+      </div>
+    </section>
+
+    <section class="legend-row">
+      <span><i class="legend-dot green"></i> Más baratas</span>
+      <span><i class="legend-dot orange"></i> Intermedias</span>
+      <span><i class="legend-dot red"></i> Más caras</span>
+      <span class="legend-note">El color se recalcula para el combustible seleccionado.</span>
+    </section>
+
+    <noscript><p style="padding:12px">Activa JavaScript para ver el mapa, o consulta los rankings: <a href="/diesel-valladolid">diésel</a>, <a href="/gasolina-95-valladolid">gasolina 95</a>, <a href="/gasolina-98-valladolid">gasolina 98</a>.</p></noscript>
+    <div id="errorBox" class="error-box hidden" role="alert"></div>
+
+    <section class="workspace" id="mapa">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <div><h2>Gasolineras de Valladolid</h2><span id="countText">0 estaciones</span></div>
+          <span class="pill" id="fuelPill">Diésel</span>
+        </div>
+        <div id="nearestBanner" class="nearest-banner hidden"></div>
+        <div id="stationList" class="station-list"></div>
+      </aside>
+
+      <section class="map-wrap" aria-label="Mapa interactivo de gasolineras">
+        <div id="map"></div>
+        <div class="map-topbar">
+          <div class="map-status"><span class="status-dot ok" id="statusDot"></span><span id="mapStatus">Datos en directo</span></div>
+          <button id="mapLocateBtn" class="map-tool" type="button">⌖ Mi ubicación</button>
+        </div>
+        <div class="map-legend"><span><i class="legend-dot green"></i> Barata</span><span><i class="legend-dot orange"></i> Media</span><span><i class="legend-dot red"></i> Cara</span></div>
+      </section>
+    </section>
+
+    <section class="split-section" id="rankings">
+      <div class="panel ranking-panel">
+        <div class="section-heading"><div><span class="section-kicker">TOP PRECIOS</span><h2>Las más baratas ahora</h2></div><span class="panel-badge" id="rankingFuel">Diésel</span></div>
+        <div id="rankingList" class="ranking-list"></div>
+      </div>
+      <div class="panel savings-panel">
+        <div class="section-heading"><div><span class="section-kicker">TU AHORRO</span><h2>¿Cuánto puedes ahorrar?</h2></div></div>
+        <div class="litres-control">
+          <div class="litres-top"><span>Litros a repostar</span><strong id="litresValue">50 L</strong></div>
+          <input id="litresRange" type="range" min="10" max="100" step="5" value="50" />
+          <div class="range-scale"><span>10 L</span><span>100 L</span></div>
+        </div>
+        <div class="saving-box"><span>Diferencia entre la más barata y la más cara</span><strong id="savingDynamic">—</strong><small id="savingDynamicText">—</small></div>
+        <p class="saving-note">El ahorro es una estimación matemática sobre los precios mostrados; no incluye promociones privadas ni variaciones posteriores de precio.</p>
+      </div>
+    </section>
+
+    <section class="seo-section">
+      <div class="seo-copy">
+        <span class="section-kicker">PUCELAGAS</span>
+        <h2>Precios de gasolina y diésel en Valladolid</h2>
+        <p>PucelaGas reúne en un único mapa las estaciones de servicio del municipio de Valladolid y sus precios disponibles. Puedes cambiar de combustible, filtrar por marca y ordenar las estaciones para localizar rápidamente las opciones más económicas.</p>
+        <p>Los datos mostrados proceden de la información pública de la Administración General del Estado. La hora indicada en la cabecera corresponde a la actualización recibida del servicio de datos.</p>
+        <div class="seo-links"><a href="/guias">Guías para ahorrar →</a><a href="/diesel-premium-valladolid">Diésel premium →</a><a href="/glp-autogas-valladolid">GLP →</a><a href="/diesel-valladolid">Ranking diésel →</a><a href="/gasolina-95-valladolid">Ranking gasolina 95 →</a><a href="/gasolina-98-valladolid">Ranking gasolina 98 →</a><a href="acerca.html">Cómo funciona PucelaGas →</a><a href="privacidad.html">Privacidad →</a></div>
+      </div>
+      <div class="data-card"><div class="data-icon">◎</div><strong>Fuente oficial</strong><span>Ministerio para la Transición Ecológica y el Reto Demográfico</span><small id="sourceStamp">Actualización: —</small></div>
+    </section>
+  </main>
+
+  <footer>
+    <div><strong>PucelaGas</strong> · Comparador local de carburantes · © <span id="year"></span></div>
+    <nav><a href="acerca.html">Sobre PucelaGas</a><a href="guias">Guías</a><a href="aviso-legal.html">Aviso legal</a><a href="privacidad.html">Privacidad</a></nav>
+  </footer>
+
+  <dialog id="stationDialog" class="station-dialog">
+    <form method="dialog" class="dialog-shell">
+      <button class="dialog-close" value="close" aria-label="Cerrar">×</button>
+      <div id="dialogContent"></div>
+    </form>
+  </dialog>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>

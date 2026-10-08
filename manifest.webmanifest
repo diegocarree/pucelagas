@@ -1,0 +1,10 @@
+{
+  "name": "PucelaGas",
+  "short_name": "PucelaGas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7f5",
+  "theme_color": "#0a9b59",
+  "description": "Mapa y comparador de precios de carburantes en Valladolid.",
+  "icons": [{"src":"/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
