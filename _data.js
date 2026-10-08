@@ -59,7 +59,9 @@ const readHist = () => { try { return JSON.parse(fs.readFileSync(HF, 'utf8')); }
 async function snapshotToFile() {
   const d = await getData(); const snap = {};
   for (const k of KEYS) { const p = d.stations.map((s) => s[k]).filter((x) => x != null); if (p.length) snap[k] = { avg: +(p.reduce((a, b) => a + b, 0) / p.length).toFixed(4), min: Math.min(...p) }; }
-  const h = readHist(); h[new Date().toISOString().slice(0, 10)] = snap;
+  const h = readHist(); const day = new Date().toISOString().slice(0, 10);
+  if (h[day]) return; // una sola foto por día: evita commits y publicaciones de más
+  h[day] = snap;
   const keep = Object.keys(h).sort().slice(-120); fs.writeFileSync(HF, JSON.stringify(Object.fromEntries(keep.map((k) => [k, h[k]])), null, 1));
 }
 module.exports = { getData, slug, saveSnapshot, snapshotToFile, getHistory };
